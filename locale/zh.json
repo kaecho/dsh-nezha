@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "哪吒 MCP",
+    "description": "连接哪吒监控内置的 MCP 服务，把服务器、命令和文件工具交给 Agent 使用。"
+  }
+}

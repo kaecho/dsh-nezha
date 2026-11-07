@@ -1,0 +1,67 @@
+{
+  "name": "dsh-nezha",
+  "version": "0.1.0",
+  "description": "Connect Nezha monitoring's built-in MCP server to DeepSeek Harness, with a visual settings page for the endpoint and PAT.",
+  "type": "module",
+  "license": "MIT",
+  "author": "kaecho",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "nezha",
+    "mcp",
+    "monitoring",
+    "operations"
+  ],
+  "engines": {
+    "node": ">=22.0.0",
+    "dsh": ">=0.2.1-rc.2"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./client.js",
+    "./typert": "./src/typert.host.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src/",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node --test test/*.test.js",
+    "test:all": "npm run check && npm test",
+    "pack:check": "npm pack --dry-run"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaecho/dsh-nezha.git"
+  },
+  "homepage": "https://github.com/kaecho/dsh-nezha#readme",
+  "bugs": {
+    "url": "https://github.com/kaecho/dsh-nezha/issues"
+  }
+}
