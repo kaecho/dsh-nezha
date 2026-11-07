@@ -224,6 +224,30 @@ group('locales (locale/en.json, locale/zh.json)', add => {
 });
 
 // ---------------------------------------------------------------------------
+// Runtime identity (client bundle and Typert host face)
+// ---------------------------------------------------------------------------
+
+group('runtime identity', add => {
+  const client = readText('client.js');
+  add(client !== null, 'client.js is missing');
+  if (client !== null) {
+    add(/id:\s*'dsh-nezha'/.test(client), "client.js must register the module id 'dsh-nezha'");
+    add(/key:\s*'dsh-nezha'/.test(client), "client.js must register the plugins.bundle.config key 'dsh-nezha'");
+    add(client.includes('plugins.bundle.config'), 'client.js must register a plugins.bundle.config page');
+    add(/package:\s*'dsh-nezha'/.test(client), "client.js must mount the Remote contribution for 'dsh-nezha'");
+    add(client.includes('nezhaSettings'), 'client.js must call the nezhaSettings Remote namespace');
+  }
+
+  const typert = readText('src/typert.host.js');
+  add(typert !== null, 'src/typert.host.js is missing');
+  if (typert !== null) {
+    add(/package:\s*'dsh-nezha'/.test(typert), "src/typert.host.js TYPERT.package must be 'dsh-nezha'");
+    add(/face:\s*'host'/.test(typert), "src/typert.host.js TYPERT.face must be 'host'");
+    add(/invocations:\s*SETTINGS_DESCRIPTORS/.test(typert), 'src/typert.host.js must publish SETTINGS_DESCRIPTORS');
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Icon
 // ---------------------------------------------------------------------------
 

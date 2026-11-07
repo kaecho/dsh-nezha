@@ -70,6 +70,10 @@ test('test uses draft values without saving them', async t => {
   assert.equal(bad.ok, false);
   assert.equal(bad.error.code, 'auth');
   assert.match(bad.error.message, /认证失败/);
+
+  const emptyUrl = await service.test({ url: '', token: 'nzp_test' });
+  assert.equal(emptyUrl.ok, false);
+  assert.equal(emptyUrl.error.code, 'missing_url');
 });
 
 test('invalid input is rejected without changing saved state', async t => {

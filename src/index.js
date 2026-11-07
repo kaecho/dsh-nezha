@@ -61,13 +61,23 @@ class NezhaSettingsService {
     this.#settings = this.#store.read();
     this.#status = this.#settings.enabled ? 'idle' : 'disabled';
 
-    ctx.effect(() => () => { void this.#dispose(); });
-    void this.#restart();
+    ctx.effect(() => () => this.#dispose());
+    void this.#restart().catch(error => {
+      ctx.logger?.warn?.(`[dsh-nezha] startup failed: ${error?.message ?? String(error)}`);
+    });
   }
 
   /** Read configuration, credential presence, live status, and registered tools. */
   async snapshot() {
     const token = await this.#describeToken();
+    const seen = new Set();
+    const tools = [];
+    for (const tool of this.#availableTools) {
+      const summary = summarizeTool(tool);
+      if (seen.has(summary.name)) continue;
+      seen.add(summary.name);
+      tools.push(summary);
+    }
     return {
       configured: this.#settings.url !== '' && token.configured,
       enabled: this.#settings.enabled,
@@ -79,7 +89,7 @@ class NezhaSettingsService {
       error: this.#error,
       server: this.#server,
       protocolVersion: this.#protocolVersion,
-      tools: this.#availableTools.map(summarizeTool),
+      tools,
     };
   }
 
@@ -142,7 +152,10 @@ class NezhaSettingsService {
   /** Test a draft endpoint/PAT without saving it. */
   async test(request = {}) {
     let endpoint = this.#settings.url;
-    if (typeof request.url === 'string' && request.url.trim() !== '') {
+    if (typeof request.url === 'string') {
+      if (request.url.trim() === '') {
+        return { ok: false, error: { code: 'missing_url', message: '请先填写 Nezha Dashboard 地址。' } };
+      }
       try { endpoint = normalizeEndpoint(request.url); }
       catch (error) { return { ok: false, error: publicError(error) }; }
     }

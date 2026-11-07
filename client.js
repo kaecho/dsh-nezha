@@ -2,7 +2,7 @@ window.__ModuleLoader__.load({
   id: 'dsh-nezha',
   factory(require) {
     const React = require('react');
-    const { jsx } = require('react/jsx-runtime');
+    const h = React.createElement;
     const { useEffect, useRef, useState } = React;
 
     const NS = 'plugins.dshNezha';
@@ -228,7 +228,7 @@ window.__ModuleLoader__.load({
       throw error;
     }
 
-    function ConfigPage({ remote, t }) {
+    function ConfigPage({ remote, t = key => key }) {
       const [snapshot, setSnapshot] = useState(null);
       const [url, setUrl] = useState('');
       const [token, setToken] = useState('');
@@ -343,42 +343,42 @@ window.__ModuleLoader__.load({
       const disabled = busy !== '';
 
       if (snapshot === null) {
-        return jsx('section', { className: 'dsh-nezha', 'data-dsh-nezha': '1' }, [
-          jsx('style', { key: 'style' }, CSS),
-          jsx('p', { key: 'loading', className: 'nz-empty' }, t('loading')),
+        return h('section', { className: 'dsh-nezha', 'data-dsh-nezha': '1' }, [
+          h('style', { key: 'style' }, CSS),
+          h('p', { key: 'loading', className: 'nz-empty' }, t('loading')),
         ]);
       }
 
       const tokenConfigured = snapshot.token?.configured === true;
       const tools = Array.isArray(snapshot.tools) ? snapshot.tools : [];
 
-      return jsx('section', { className: 'dsh-nezha', 'data-dsh-nezha': '1' }, [
-        jsx('style', { key: 'style' }, CSS),
-        jsx('header', { key: 'header', className: 'nz-header' }, [
-          jsx('h3', { key: 'title' }, t('title')),
-          jsx('p', { key: 'intro' }, t('intro')),
+      return h('section', { className: 'dsh-nezha', 'data-dsh-nezha': '1' }, [
+        h('style', { key: 'style' }, CSS),
+        h('header', { key: 'header', className: 'nz-header' }, [
+          h('h3', { key: 'title' }, t('title')),
+          h('p', { key: 'intro' }, t('intro')),
         ]),
-        jsx('div', {
+        h('div', {
           key: 'status',
           className: `nz-status ${statusClass}`,
           role: 'status',
           'aria-live': 'polite',
         }, [
-          jsx('span', { key: 'dot', className: 'nz-dot', 'aria-hidden': true }),
-          jsx('span', { key: 'label', className: 'nz-status-label' }, t(`status_${status}`)),
+          h('span', { key: 'dot', className: 'nz-dot', 'aria-hidden': true }),
+          h('span', { key: 'label', className: 'nz-status-label' }, t(`status_${status}`)),
           snapshot.server
-            ? jsx('span', { key: 'server', className: 'nz-meta' },
+            ? h('span', { key: 'server', className: 'nz-meta' },
               `${snapshot.server.name || 'Nezha'}${snapshot.server.version ? ` · ${snapshot.server.version}` : ''}${snapshot.protocolVersion ? ` · MCP ${snapshot.protocolVersion}` : ''}`)
             : null,
         ]),
         snapshot.error
-          ? jsx('div', { key: 'error', className: 'nz-notice nz-notice-error' }, snapshot.error.message)
+          ? h('div', { key: 'error', className: 'nz-notice nz-notice-error' }, snapshot.error.message)
           : null,
-        jsx('div', { key: 'card', className: 'nz-card' }, [
-          jsx('div', { key: 'grid', className: 'nz-grid' }, [
-            jsx('label', { key: 'url', className: 'nz-field' }, [
-              jsx('span', { key: 'label', className: 'nz-label' }, t('urlLabel')),
-              jsx('input', {
+        h('div', { key: 'card', className: 'nz-card' }, [
+          h('div', { key: 'grid', className: 'nz-grid' }, [
+            h('label', { key: 'url', className: 'nz-field' }, [
+              h('span', { key: 'label', className: 'nz-label' }, t('urlLabel')),
+              h('input', {
                 key: 'input',
                 className: 'nz-input',
                 type: 'url',
@@ -389,17 +389,17 @@ window.__ModuleLoader__.load({
                 disabled,
                 onChange: event => setUrl(event.target.value),
               }),
-              jsx('span', { key: 'hint', className: 'nz-hint' }, t('urlHint')),
+              h('span', { key: 'hint', className: 'nz-hint' }, t('urlHint')),
             ]),
-            jsx('label', { key: 'token', className: 'nz-field' }, [
-              jsx('span', { key: 'label', className: 'nz-label' }, [
+            h('label', { key: 'token', className: 'nz-field' }, [
+              h('span', { key: 'label', className: 'nz-label' }, [
                 t('tokenLabel'),
-                jsx('em', {
+                h('em', {
                   key: 'badge',
                   className: `nz-badge ${tokenConfigured ? 'nz-badge-ok' : 'nz-badge-warn'}`,
                 }, tokenConfigured ? t('tokenSet') : t('tokenMissing')),
               ]),
-              jsx('input', {
+              h('input', {
                 key: 'input',
                 className: 'nz-input',
                 type: 'password',
@@ -413,12 +413,12 @@ window.__ModuleLoader__.load({
                   if (event.target.value !== '') setClearToken(false);
                 },
               }),
-              jsx('span', { key: 'hint', className: 'nz-hint' }, t('tokenHint')),
+              h('span', { key: 'hint', className: 'nz-hint' }, t('tokenHint')),
             ]),
           ]),
-          jsx('div', { key: 'options', className: 'nz-options' }, [
-            jsx('label', { key: 'enabled', className: 'nz-switch' }, [
-              jsx('input', {
+          h('div', { key: 'options', className: 'nz-options' }, [
+            h('label', { key: 'enabled', className: 'nz-switch' }, [
+              h('input', {
                 key: 'input',
                 type: 'checkbox',
                 role: 'switch',
@@ -427,11 +427,11 @@ window.__ModuleLoader__.load({
                 disabled,
                 onChange: event => setEnabled(event.target.checked),
               }),
-              jsx('span', { key: 'text' }, t('enabledLabel')),
+              h('span', { key: 'text' }, t('enabledLabel')),
             ]),
-            jsx('label', { key: 'timeout', className: 'nz-field', style: { maxWidth: '180px' } }, [
-              jsx('span', { key: 'label', className: 'nz-label' }, t('timeoutLabel')),
-              jsx('input', {
+            h('label', { key: 'timeout', className: 'nz-field', style: { maxWidth: '180px' } }, [
+              h('span', { key: 'label', className: 'nz-label' }, t('timeoutLabel')),
+              h('input', {
                 key: 'input',
                 className: 'nz-input',
                 type: 'number',
@@ -442,25 +442,25 @@ window.__ModuleLoader__.load({
                 disabled,
                 onChange: event => setTimeoutSec(event.target.value),
               }),
-              jsx('span', { key: 'hint', className: 'nz-hint' }, t('timeoutHint')),
+              h('span', { key: 'hint', className: 'nz-hint' }, t('timeoutHint')),
             ]),
           ]),
-          jsx('div', { key: 'actions', className: 'nz-actions' }, [
-            jsx('button', {
+          h('div', { key: 'actions', className: 'nz-actions' }, [
+            h('button', {
               key: 'save', type: 'button', className: 'nz-button nz-primary', disabled,
               onClick: save,
             }, busy === 'save' ? t('saving') : t('save')),
-            jsx('button', {
+            h('button', {
               key: 'test', type: 'button', className: 'nz-button', disabled,
               onClick: test,
             }, busy === 'test' ? t('testing') : t('test')),
-            jsx('button', {
+            h('button', {
               key: 'refresh', type: 'button', className: 'nz-button', disabled: disabled || !snapshot.configured,
               onClick: refresh,
             }, busy === 'refresh' ? t('refreshing') : t('refresh')),
           ]),
-          jsx('label', { key: 'clear', className: 'nz-check' }, [
-            jsx('input', {
+          h('label', { key: 'clear', className: 'nz-check' }, [
+            h('input', {
               key: 'input',
               type: 'checkbox',
               checked: clearToken,
@@ -470,10 +470,10 @@ window.__ModuleLoader__.load({
                 if (event.target.checked) setToken('');
               },
             }),
-            jsx('span', { key: 'text' }, t('clearToken')),
+            h('span', { key: 'text' }, t('clearToken')),
           ]),
           notice
-            ? jsx('div', {
+            ? h('div', {
               key: 'notice',
               className: `nz-notice ${notice.kind === 'error' ? 'nz-notice-error' : 'nz-notice-ok'}`,
               role: 'status',
@@ -482,19 +482,19 @@ window.__ModuleLoader__.load({
             : null,
         ]),
         tools.length > 0
-          ? jsx('div', { key: 'tools', className: 'nz-tools' }, [
-            jsx('div', { key: 'head', className: 'nz-tools-head' }, [
-              jsx('strong', { key: 'title' }, t('toolsTitle')),
-              jsx('span', { key: 'count', className: 'nz-count' }, String(tools.length)),
+          ? h('div', { key: 'tools', className: 'nz-tools' }, [
+            h('div', { key: 'head', className: 'nz-tools-head' }, [
+              h('strong', { key: 'title' }, t('toolsTitle')),
+              h('span', { key: 'count', className: 'nz-count' }, String(tools.length)),
             ]),
-            ...tools.map(tool => jsx('div', { key: tool.name, className: 'nz-tool' }, [
-              jsx('code', { key: 'name' }, tool.name),
-              tool.description ? jsx('span', { key: 'description' }, tool.description) : null,
+            ...tools.map(tool => h('div', { key: tool.name, className: 'nz-tool' }, [
+              h('code', { key: 'name' }, tool.name),
+              tool.description ? h('span', { key: 'description' }, tool.description) : null,
             ])),
           ])
-          : jsx('p', { key: 'tools-empty', className: 'nz-empty' },
+          : h('p', { key: 'tools-empty', className: 'nz-empty' },
             status === 'connected' ? t('toolsEmpty') : t('toolsHint')),
-        jsx('p', { key: 'footnote', className: 'nz-hint' }, t('footnote')),
+        h('p', { key: 'footnote', className: 'nz-hint' }, t('footnote')),
       ]);
     }
 

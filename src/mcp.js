@@ -9,6 +9,7 @@ export const PROTOCOL_VERSION = '2024-11-05';
 export const CLIENT_NAME = 'dsh-nezha';
 export const DEFAULT_TIMEOUT_MS = 60_000;
 export const MAX_TOOL_PAGES = 50;
+export const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 const MAX_PUBLIC_NAME_LENGTH = 64;
 const HASH_LENGTH = 12;
 
@@ -154,6 +155,12 @@ function asNezhaError(error, fallbackCode = 'unexpected', fallbackMessage = '连
   return new NezhaMcpError(fallbackCode, fallbackMessage);
 }
 
+function abortReason(signal) {
+  const reason = signal?.reason;
+  if (reason instanceof Error) return reason;
+  return new NezhaMcpError('cancelled', '请求已取消。');
+}
+
 /**
  * Lean Nezha MCP client. Nezha implements MCP Streamable HTTP as POST
  * request/response (GET and DELETE return 405), so this client sends one
@@ -286,15 +293,24 @@ export class NezhaMcpClient {
         redirect: 'follow',
       });
     } catch (error) {
+      if (signal?.aborted) throw abortReason(signal);
       throw asNezhaError(error);
     }
 
     const sessionId = response.headers?.get?.('mcp-session-id');
     if (typeof sessionId === 'string' && sessionId !== '') this.#sessionId = sessionId;
 
+    const declaredLength = Number(response.headers?.get?.('content-length'));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
+      throw new NezhaMcpError('response_too_large', 'Nezha 返回的响应体过大，已停止读取。');
+    }
     const text = await response.text().catch(error => {
+      if (signal?.aborted) throw abortReason(signal);
       throw asNezhaError(error);
     });
+    if (text.length > MAX_RESPONSE_BYTES) {
+      throw new NezhaMcpError('response_too_large', 'Nezha 返回的响应体过大，已停止读取。');
+    }
     if (!response.ok) throw httpError(response.status, text);
     const contentType = response.headers?.get?.('content-type') ?? '';
     return parseRpcBody(text, contentType);
