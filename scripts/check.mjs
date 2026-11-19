@@ -30,6 +30,7 @@ const REQUIRED_FILES = [
   'locale/*.json',
   'icon.svg',
   'README.md',
+  'README.zh.md',
   'LICENSE',
   'docs/plugin-detail.zh.md',
   'docs/plugin-detail.en.md',
@@ -235,6 +236,25 @@ group('locales (locale/en.json, locale/zh.json)', add => {
         add(files.includes(detail), `files must include the detail document "${detail}"`);
       }
     }
+  }
+});
+
+// ---------------------------------------------------------------------------
+// READMEs (English default, Chinese translation)
+// ---------------------------------------------------------------------------
+
+group('readmes (README.md, README.zh.md)', add => {
+  const english = readText('README.md');
+  const chinese = readText('README.zh.md');
+  add(english !== null, 'README.md is missing');
+  add(chinese !== null, 'README.zh.md is missing');
+  if (english !== null) {
+    add(english.startsWith('# dsh-nezha'), 'README.md must start with the "# dsh-nezha" heading');
+    add(english.includes('(README.zh.md)'), 'README.md must link to README.zh.md');
+  }
+  if (chinese !== null) {
+    add(chinese.startsWith('# dsh-nezha'), 'README.zh.md must start with the "# dsh-nezha" heading');
+    add(chinese.includes('(README.md)'), 'README.zh.md must link to README.md');
   }
 });
 

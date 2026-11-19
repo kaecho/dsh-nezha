@@ -22,6 +22,8 @@
 
 - 插件详情页不再渲染整篇 README，改为精选文档；完整说明仍保留在 README 与 GitHub。
 - 设置页状态、错误与操作反馈改为可读中文提示与建议，工具按 `server` / `fs` / `meta` 分组并显示中文名称。
+- README 改为中英双语：默认英文 `README.md`，中文为 `README.zh.md`，两者顶部互相链接。
+- Release 工作流升级：推送版本 tag 时校验版本、读取 CHANGELOG、上传 `.tgz`，并自动把新版本标记为 latest Release（旧版本补发不会顶掉 latest，重复执行可安全重跑）。
 - 版本号升级到 `0.2.0`。
 
 ## [0.1.0] - 2026-11-07

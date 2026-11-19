@@ -54,5 +54,5 @@ Connect the built-in MCP server of [Nezha Monitoring V2](https://nezha.wiki/) to
 
 ## More
 
-- Full install, PAT scopes, troubleshooting, and development notes: [README](https://github.com/kaecho/dsh-nezha#readme).
+- Full install, PAT scopes, troubleshooting, and development notes: [README](https://github.com/kaecho/dsh-nezha/blob/main/README.md).
 - Feedback: [GitHub Issues](https://github.com/kaecho/dsh-nezha/issues).

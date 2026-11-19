@@ -54,5 +54,5 @@
 
 ## 更多
 
-- 完整安装、PAT scope、故障排查与开发说明见 [README](https://github.com/kaecho/dsh-nezha#readme)。
+- 完整安装、PAT scope、故障排查与开发说明见 [README](https://github.com/kaecho/dsh-nezha/blob/main/README.zh.md)。
 - 问题反馈：[GitHub Issues](https://github.com/kaecho/dsh-nezha/issues)。

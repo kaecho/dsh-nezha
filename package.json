@@ -34,6 +34,7 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
+    "README.zh.md",
     "LICENSE",
     "docs/plugin-detail.zh.md",
     "docs/plugin-detail.en.md"
