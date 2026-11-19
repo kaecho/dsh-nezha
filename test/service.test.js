@@ -116,3 +116,61 @@ test('disposal unregisters every tool', async t => {
   await fakeContext.dispose();
   assert.equal(tools.definitions.size, 0);
 });
+
+test('snapshot exposes settings path, plugin version, and server overview after connect', async t => {
+  const fake = await startFakeNezha({ serverList: 'sample' });
+  t.after(() => fake.close());
+  const { service } = setup(t);
+
+  const before = await service.snapshot();
+  assert.match(before.settingsPath, /dsh-nezha[\\/]settings\.json$/);
+  assert.match(before.pluginVersion, /^\d+\.\d+\.\d+/);
+  assert.equal(before.serverSummary, null);
+  assert.deepEqual(before.servers, []);
+
+  const saved = await service.save({ url: fake.origin, token: 'nzp_test' });
+  assert.equal(saved.snapshot.status, 'connected');
+  assert.equal(saved.snapshot.serverSummary.total, 2);
+  assert.equal(saved.snapshot.serverSummary.online, 1);
+  assert.deepEqual(saved.snapshot.servers.map(server => server.name), ['web-01', 'gpu-02']);
+  assert.ok(saved.snapshot.connectedAt);
+
+  const refreshed = await service.servers();
+  assert.equal(refreshed.error, null);
+  assert.equal(refreshed.serverSummary.total, 2);
+  assert.ok(refreshed.fetchedAt);
+});
+
+test('server overview failure does not break connection or tools', async t => {
+  const fake = await startFakeNezha({ serverList: 'error' });
+  t.after(() => fake.close());
+  const { service, tools } = setup(t);
+
+  const saved = await service.save({ url: fake.origin, token: 'nzp_test' });
+  assert.equal(saved.snapshot.status, 'connected');
+  assert.equal(saved.snapshot.serverSummary, null);
+  assert.equal(tools.definitions.size, 3);
+
+  const refreshed = await service.servers();
+  assert.equal(refreshed.error.code, 'servers_unavailable');
+  assert.deepEqual(refreshed.servers, []);
+});
+
+test('servers() reports not_connected before configuration', async t => {
+  const { service } = setup(t);
+  const result = await service.servers();
+  assert.equal(result.error.code, 'not_connected');
+});
+
+test('test returns a server overview without saving configuration', async t => {
+  const fake = await startFakeNezha({ serverList: 'sample' });
+  t.after(() => fake.close());
+  const { service, credentials } = setup(t);
+
+  const tested = await service.test({ url: fake.origin, token: 'nzp_test' });
+  assert.equal(tested.ok, true);
+  assert.equal(tested.serverSummary.total, 2);
+  assert.equal(tested.serverSummary.online, 1);
+  assert.equal(credentials.records.size, 0);
+  assert.equal((await service.snapshot()).url, '');
+});

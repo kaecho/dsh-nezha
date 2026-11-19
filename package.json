@@ -1,7 +1,7 @@
 {
   "name": "dsh-nezha",
-  "version": "0.1.0",
-  "description": "Connect Nezha monitoring's built-in MCP server to DeepSeek Harness, with a visual settings page for the endpoint and PAT.",
+  "version": "0.2.0",
+  "description": "Connect Nezha monitoring's built-in MCP server to DeepSeek Harness, with a visual connection page for the endpoint and PAT.",
   "type": "module",
   "license": "MIT",
   "author": "kaecho",
@@ -34,7 +34,9 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/plugin-detail.zh.md",
+    "docs/plugin-detail.en.md"
   ],
   "scripts": {
     "check": "node scripts/check.mjs",

@@ -80,6 +80,57 @@ export function summarizeTool(tool) {
   };
 }
 
+function cleanString(value) {
+  return typeof value === 'string' ? value : '';
+}
+
+function textPayload(result) {
+  if (!Array.isArray(result?.content)) return undefined;
+  const text = result.content
+    .filter(block => block && block.type === 'text' && typeof block.text === 'string')
+    .map(block => block.text)
+    .join('\n')
+    .trim();
+  if (text === '') return undefined;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Parse a Nezha `server.list` tools/call result into the compact overview the
+ * settings page renders. Returns `null` when the payload is missing or
+ * malformed so callers can degrade without breaking the connection.
+ */
+export function extractServerOverview(result) {
+  if (!result || typeof result !== 'object') return null;
+  let payload = textPayload(result);
+  if (payload === undefined && result.structuredContent && typeof result.structuredContent === 'object') {
+    payload = result.structuredContent;
+  }
+  if (!payload || typeof payload !== 'object' || !Array.isArray(payload.servers)) return null;
+  const servers = [];
+  for (const item of payload.servers) {
+    if (!item || typeof item !== 'object') continue;
+    const name = cleanString(item.name);
+    if (name === '') continue;
+    servers.push({
+      id: Number.isFinite(item.id) ? item.id : 0,
+      name,
+      online: item.online === true,
+      platform: cleanString(item.platform),
+      arch: cleanString(item.arch),
+      ipv4: cleanString(item.ipv4),
+      ipv6: cleanString(item.ipv6),
+      lastActive: cleanString(item.last_active ?? item.lastActive),
+    });
+  }
+  const online = servers.filter(server => server.online).length;
+  return { servers, summary: { total: servers.length, online } };
+}
+
 function boundedMessage(value, limit = 300) {
   const text = typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
   return text.length > limit ? `${text.slice(0, limit)}…` : text;

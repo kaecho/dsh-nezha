@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NezhaMcpClient, NezhaMcpError, normalizeEndpoint, parseRpcBody, publicToolName } from '../src/mcp.js';
+import { NezhaMcpClient, NezhaMcpError, extractServerOverview, normalizeEndpoint, parseRpcBody, publicToolName } from '../src/mcp.js';
 import { startFakeNezha } from './helpers/fake-nezha.js';
 
 test('normalizeEndpoint appends /mcp and rejects unsafe addresses', () => {
@@ -76,4 +76,29 @@ test('timeouts become a timeout error', async t => {
   await assert.rejects(slow.callTool('slow', {}), error => error instanceof NezhaMcpError && error.code === 'timeout');
   await client.close();
   await slow.close();
+});
+
+test('extractServerOverview parses server.list text content', () => {
+  const result = {
+    content: [{ type: 'text', text: JSON.stringify({ servers: [
+      { id: 1, name: 'a', online: true, platform: 'debian', arch: 'x86_64', ipv4: '1.2.3.4', last_active: '2026-11-19T00:00:00Z' },
+      { id: 2, name: 'b', online: false },
+      { bad: true },
+    ], count: 2 }) }],
+    structuredContent: { servers: [{ id: 9, name: 'structured', online: true }] },
+  };
+  assert.deepEqual(extractServerOverview(result), {
+    servers: [
+      { id: 1, name: 'a', online: true, platform: 'debian', arch: 'x86_64', ipv4: '1.2.3.4', ipv6: '', lastActive: '2026-11-19T00:00:00Z' },
+      { id: 2, name: 'b', online: false, platform: '', arch: '', ipv4: '', ipv6: '', lastActive: '' },
+    ],
+    summary: { total: 2, online: 1 },
+  });
+});
+
+test('extractServerOverview tolerates missing or malformed results', () => {
+  assert.equal(extractServerOverview(undefined), null);
+  assert.equal(extractServerOverview({ content: [{ type: 'text', text: 'not json' }] }), null);
+  assert.equal(extractServerOverview({ content: [], structuredContent: { servers: 'x' } }), null);
+  assert.deepEqual(extractServerOverview({ structuredContent: { servers: [] } }), { servers: [], summary: { total: 0, online: 0 } });
 });

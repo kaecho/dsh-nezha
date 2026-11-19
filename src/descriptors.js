@@ -60,12 +60,14 @@ const direct = method => ({
   namespace: SERVICE,
   method,
   description: method === 'snapshot'
-    ? 'Read the Nezha MCP configuration, connection status, and registered tools.'
+    ? 'Read the Nezha MCP configuration, connection status, registered tools, and monitored servers.'
     : method === 'save'
       ? 'Save the Nezha endpoint, PAT, and enable state, then reconnect and refresh tools.'
       : method === 'test'
-        ? 'Test a Nezha MCP endpoint and PAT without saving, returning server info and tools.'
-        : 'Reconnect the saved Nezha MCP configuration and refresh the registered tools.',
+        ? 'Test a Nezha MCP endpoint and PAT without saving, returning server info, tools, and a server overview.'
+        : method === 'servers'
+          ? 'Refresh and return the monitored-server overview from the connected Nezha MCP server.'
+          : 'Reconnect the saved Nezha MCP configuration and refresh the registered tools.',
   invocation: { kind: 'direct' },
   parameters: method === 'save' || method === 'test'
     ? [{ name: 'request', wire: 'request', source: 'json', codec: requestCodec(method) }]
@@ -78,4 +80,5 @@ export const SETTINGS_DESCRIPTORS = Object.freeze([
   direct('save'),
   direct('test'),
   direct('refresh'),
+  direct('servers'),
 ]);

@@ -10,11 +10,23 @@ function json(res, status, value, headers = {}) {
   res.end(body);
 }
 
+export const SAMPLE_SERVERS = Object.freeze([
+  {
+    id: 46, name: 'web-01', uuid: 'a1b2c3d4', online: true, platform: 'ubuntu',
+    arch: 'x86_64', ipv4: '198.51.100.24', ipv6: '2001:db8::24',
+    last_active: '2026-11-19T01:53:18.165538693+08:00',
+  },
+  { id: 102, name: 'gpu-02', uuid: 'e5f6a7b8', online: false, platform: 'debian', arch: 'x86_64' },
+]);
+
 /**
  * In-process Nezha MCP stand-in: initialize, paginated tools/list, tools/call,
- * SSE responses, auth failure, 404, and a slow call for timeout tests.
+ * SSE responses, auth failure, 404, a slow call for timeout tests, and
+ * configurable `server.list` payloads for the settings overview.
+ * @param {{ serverList?: 'empty' | 'sample' | 'error' }} [options]
  */
-export async function startFakeNezha() {
+export async function startFakeNezha(options = {}) {
+  const serverList = options.serverList ?? 'empty';
   let initialized = false;
   const seen = { sessionHeaders: [], authHeaders: [] };
   const server = createServer(async (req, res) => {
@@ -67,11 +79,19 @@ export async function startFakeNezha() {
     if (message?.method === 'tools/call') {
       const name = message.params?.name;
       if (name === 'server.list') {
+        if (serverList === 'error') {
+          return json(res, 200, {
+            jsonrpc: '2.0', id: message.id,
+            result: { content: [{ type: 'text', text: 'server.list is not allowed for this token' }], isError: true },
+          });
+        }
+        const servers = serverList === 'sample' ? SAMPLE_SERVERS : [];
+        const payload = serverList === 'sample' ? { servers, count: servers.length } : { servers };
         return json(res, 200, {
           jsonrpc: '2.0', id: message.id,
           result: {
-            content: [{ type: 'text', text: '{"servers":[]}' }],
-            structuredContent: { servers: [] },
+            content: [{ type: 'text', text: JSON.stringify(payload) }],
+            structuredContent: payload,
           },
         });
       }

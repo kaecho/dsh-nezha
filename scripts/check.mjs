@@ -31,6 +31,8 @@ const REQUIRED_FILES = [
   'icon.svg',
   'README.md',
   'LICENSE',
+  'docs/plugin-detail.zh.md',
+  'docs/plugin-detail.en.md',
 ];
 const SKIP_DIRECTORIES = new Set(['node_modules', '.git', 'coverage', '.plugin-manager']);
 const groups = [];
@@ -205,6 +207,8 @@ group('bundle patch (cordis.patch.yml)', add => {
 // ---------------------------------------------------------------------------
 
 group('locales (locale/en.json, locale/zh.json)', add => {
+  const pkg = readJson('package.json').value;
+  const files = Array.isArray(pkg?.files) ? pkg.files : [];
   for (const language of ['en', 'zh']) {
     const parsed = readJson(`locale/${language}.json`);
     if (parsed.error) {
@@ -220,6 +224,17 @@ group('locales (locale/en.json, locale/zh.json)', add => {
       typeof meta?.description === 'string' && meta.description.trim() !== '',
       `locale/${language}.json meta.description must be a non-empty string`,
     );
+    const detail = meta?.detail;
+    if (detail !== undefined) {
+      add(
+        typeof detail === 'string' && /^(?!\.)(?!.*\.\.)[\w./-]+\.md$/.test(detail),
+        `locale/${language}.json meta.detail must be a relative Markdown path`,
+      );
+      if (typeof detail === 'string') {
+        add(isFile(join(root, detail)), `locale/${language}.json meta.detail points to missing file "${detail}"`);
+        add(files.includes(detail), `files must include the detail document "${detail}"`);
+      }
+    }
   }
 });
 
@@ -234,6 +249,7 @@ group('runtime identity', add => {
     add(/id:\s*'dsh-nezha'/.test(client), "client.js must register the module id 'dsh-nezha'");
     add(/key:\s*'dsh-nezha'/.test(client), "client.js must register the plugins.bundle.config key 'dsh-nezha'");
     add(client.includes('plugins.bundle.config'), 'client.js must register a plugins.bundle.config page');
+    add(client.includes('plugins.detail.badge'), 'client.js must register a plugins.detail.badge entry');
     add(/package:\s*'dsh-nezha'/.test(client), "client.js must mount the Remote contribution for 'dsh-nezha'");
     add(client.includes('nezhaSettings'), 'client.js must call the nezhaSettings Remote namespace');
   }

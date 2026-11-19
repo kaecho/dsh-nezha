@@ -4,6 +4,26 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-19
+
+### Added
+
+- 参考 dsh-grok-search 重做插件设置页：状态头 + 状态胶囊、连接路由画布（DSH → 哪吒 MCP → 服务器 / 工具组）、可折叠工具与服务器列表、配置路径与复制按钮。
+- 新增「连接设置」弹窗：地址实时预览、PAT 显示/隐藏、超时校验、启用开关、清除令牌。
+- 新增「测试连接」弹窗：依次展示地址规范化、MCP 握手、工具列表与服务器概览结果，并按错误码给出处理建议。
+- 连接后 best-effort 读取 `server.list`，在设置页显示服务器在线统计与列表；新增轻量 Remote 方法 `servers` 单独刷新服务器状态，不重连 MCP。
+- `snapshot` 增加 `pluginVersion`、`settingsPath`、`connectedAt`、`servers`、`serverSummary`、`serversFetchedAt` 字段。
+- 新增精选插件详情文档 `docs/plugin-detail.zh.md` / `docs/plugin-detail.en.md`，并通过 `locale.meta.detail` 在详情页展示。
+- 注册 `plugins.detail.badge`，在插件标题旁显示 GitHub 仓库徽标。
+- 深色/浅色主题均使用 DSH 设计令牌自动适配；支持 `prefers-reduced-motion` 与窄屏纵向布局。
+- 新增 `extractServerOverview` 纯函数与 `servers` 设置描述符，并补充对应测试。
+
+### Changed
+
+- 插件详情页不再渲染整篇 README，改为精选文档；完整说明仍保留在 README 与 GitHub。
+- 设置页状态、错误与操作反馈改为可读中文提示与建议，工具按 `server` / `fs` / `meta` 分组并显示中文名称。
+- 版本号升级到 `0.2.0`。
+
 ## [0.1.0] - 2026-11-07
 
 ### Added
@@ -20,5 +40,6 @@
 - 新增无第三方依赖的 `scripts/check.mjs`，校验 manifest、bundle patch、locale、图标和 JS 语法。
 - 新增 GitHub Actions CI（Node.js 22/24）和基于 `v*` tag 的 GitHub Release 工作流。
 
-[Unreleased]: https://github.com/kaecho/dsh-nezha/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kaecho/dsh-nezha/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kaecho/dsh-nezha/releases/tag/v0.2.0
 [0.1.0]: https://github.com/kaecho/dsh-nezha/releases/tag/v0.1.0

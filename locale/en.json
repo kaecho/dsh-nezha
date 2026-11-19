@@ -1,6 +1,7 @@
 {
   "meta": {
     "title": "Nezha MCP",
-    "description": "Connects a Nezha monitoring MCP server and makes its server, command, and file tools available to the agent."
+    "description": "Connects a Nezha monitoring MCP server and makes its server, command, and file tools available to the agent.",
+    "detail": "docs/plugin-detail.en.md"
   }
 }

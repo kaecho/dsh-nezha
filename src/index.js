@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { NezhaMcpClient, NezhaMcpError, normalizeEndpoint, summarizeTool } from './mcp.js';
+import { NezhaMcpClient, NezhaMcpError, extractServerOverview, normalizeEndpoint, summarizeTool } from './mcp.js';
 import { createToolDefinition } from './tool-bridge.js';
 import { createSettingsStore, MAX_TIMEOUT_MS, MIN_TIMEOUT_MS } from './settings-store.js';
 import { SERVICE, SETTINGS_DESCRIPTORS } from './descriptors.js';
@@ -48,6 +48,11 @@ class NezhaSettingsService {
   #queue = Promise.resolve();
   #generation = 0;
   #disposed = false;
+  #storePath = '';
+  #connectedAt = null;
+  #servers = null;
+  #serverSummary = null;
+  #serversFetchedAt = null;
 
   constructor(ctx) {
     this.ctx = ctx;
@@ -58,6 +63,7 @@ class NezhaSettingsService {
       ? profile.dir
       : (process.env.DSH_PROFILE_DIR ?? process.cwd());
     this.#store = createSettingsStore({ profileDir: this.#profileDir });
+    this.#storePath = this.#store.path;
     this.#settings = this.#store.read();
     this.#status = this.#settings.enabled ? 'idle' : 'disabled';
 
@@ -90,6 +96,12 @@ class NezhaSettingsService {
       server: this.#server,
       protocolVersion: this.#protocolVersion,
       tools,
+      pluginVersion: PACKAGE_VERSION,
+      settingsPath: this.#storePath,
+      connectedAt: this.#connectedAt,
+      servers: this.#servers ?? [],
+      serverSummary: this.#serverSummary,
+      serversFetchedAt: this.#serversFetchedAt,
     };
   }
 
@@ -181,12 +193,19 @@ class NezhaSettingsService {
     });
     try {
       const info = await client.connect();
+      let overview = null;
+      try {
+        const signal = AbortSignal.timeout(Math.min(this.#settings.timeoutMs, 15_000));
+        overview = extractServerOverview(await client.callTool('server.list', {}, signal));
+      } catch {}
       return {
         ok: true,
         endpoint,
         server: normalizeServer(info.serverInfo),
         protocolVersion: info.protocolVersion,
         tools: info.tools.map(summarizeTool),
+        servers: overview?.servers ?? [],
+        serverSummary: overview?.summary ?? null,
       };
     } catch (error) {
       return { ok: false, endpoint, error: publicError(error) };
@@ -199,6 +218,54 @@ class NezhaSettingsService {
   async refresh() {
     await this.#restart();
     return { snapshot: await this.snapshot(), error: null };
+  }
+
+  /** Refresh the monitored-server overview without reconnecting MCP. */
+  async servers() {
+    const client = this.#client;
+    if (this.#status !== 'connected' || client === null) {
+      return {
+        servers: [],
+        serverSummary: null,
+        fetchedAt: null,
+        error: { code: 'not_connected', message: '尚未连接 Nezha，无法读取服务器列表。' },
+      };
+    }
+    const fetched = await this.#fetchServerOverview(client);
+    if (fetched.error !== null) {
+      return {
+        servers: this.#servers ?? [],
+        serverSummary: this.#serverSummary,
+        fetchedAt: this.#serversFetchedAt,
+        error: fetched.error,
+      };
+    }
+    return {
+      servers: fetched.overview.servers,
+      serverSummary: fetched.overview.summary,
+      fetchedAt: this.#serversFetchedAt,
+      error: null,
+    };
+  }
+
+  async #fetchServerOverview(client) {
+    try {
+      const signal = AbortSignal.timeout(Math.min(this.#settings.timeoutMs, 15_000));
+      const result = await client.callTool('server.list', {}, signal);
+      const overview = extractServerOverview(result);
+      if (overview === null) {
+        return {
+          overview: null,
+          error: { code: 'servers_unavailable', message: '无法解析 Nezha 服务器列表，可能是 PAT 权限不足或返回格式已变化。' },
+        };
+      }
+      this.#servers = overview.servers;
+      this.#serverSummary = overview.summary;
+      this.#serversFetchedAt = new Date().toISOString();
+      return { overview, error: null };
+    } catch (error) {
+      return { overview: null, error: publicError(error) };
+    }
   }
 
   #enqueue(task) {
@@ -219,6 +286,10 @@ class NezhaSettingsService {
     this.#availableTools = [];
     this.#server = null;
     this.#protocolVersion = null;
+    this.#connectedAt = null;
+    this.#servers = null;
+    this.#serverSummary = null;
+    this.#serversFetchedAt = null;
 
     if (this.#disposed) return;
     if (!this.#settings.enabled) {
@@ -267,6 +338,8 @@ class NezhaSettingsService {
       this.#availableTools = info.tools;
       this.#registerTools(info.tools);
       this.#status = 'connected';
+      this.#connectedAt = new Date().toISOString();
+      await this.#fetchServerOverview(client);
     } catch (error) {
       await client.close().catch(() => {});
       if (this.#disposed || generation !== this.#generation) return;

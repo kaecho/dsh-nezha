@@ -3,13 +3,14 @@
 [![CI](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml/badge.svg)](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-把 [哪吒监控（Nezha Monitoring）V2](https://nezha.wiki/) 内置的 MCP 服务接入 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/dsh) 的插件。安装后，Agent 可以通过一组 `mcp__nezha__*` 工具查看服务器、执行一次性命令、读写文件和生成大文件传输链接；服务器地址、PAT、启用状态和工具刷新都可以在 DSH Web UI 的插件详情页完成。
+把 [哪吒监控（Nezha Monitoring）V2](https://nezha.wiki/) 内置的 MCP 服务接入 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/dsh) 的插件。安装后，Agent 可以通过一组 `mcp__nezha__*` 工具查看服务器、执行一次性命令、读写文件和生成大文件传输链接；服务器地址、PAT、启用状态和工具刷新都可以在 DSH Web UI 的插件详情页完成。设置页参考 [dsh-grok-search](https://github.com/Lain-in-coding/dsh-grok-search) 的交互设计，提供连接路由、测试连接弹窗与服务器/工具分组展示。
 
-> 当前版本：`0.1.0` · 许可证：MIT · 运行要求：DSH `>=0.2.1-rc.2`、Node.js `>=22`、Nezha V2（开启 `enable_mcp`）
+> 当前版本：`0.2.0` · 许可证：MIT · 运行要求：DSH `>=0.2.1-rc.2`、Node.js `>=22`、Nezha V2（开启 `enable_mcp`）
 
 ## 目录
 
 - [功能](#功能)
+- [界面](#界面)
 - [环境要求](#环境要求)
 - [安装](#安装)
 - [首次配置](#首次配置)
@@ -28,10 +29,40 @@
 - 连接 Nezha Dashboard 的 MCP 端点：`POST /mcp`，使用 `Authorization: Bearer nzp_...` 认证。
 - 启动或保存配置后自动执行 MCP `initialize`、`notifications/initialized` 和 `tools/list`，并把 Nezha 工具动态注册到 DSH。
 - 工具统一使用 `mcp__nezha__<tool>` 命名，例如 `mcp__nezha__server_list`、`mcp__nezha__fs_read`。
-- 在 DSH Web UI 插件详情页内提供设置面板：服务器地址、PAT、启用/停用、超时、测试连接、保存、刷新工具和清除令牌。
+- 在 DSH Web UI 插件详情页内提供可视化连接页：状态胶囊、连接路由、可折叠的服务器与工具分组、配置路径与复制按钮。
+- 提供「连接设置」弹窗（地址、PAT、超时、启用、清除令牌）与「测试连接」弹窗（地址 → MCP 握手 → 工具列表 → 服务器概览），测试不会保存配置。
+- 连接后 best-effort 读取 `server.list`，显示服务器在线统计与列表，并可用独立的刷新按钮更新状态而不重连 MCP。
 - 连接失败、认证失败、权限不足、404、限流和超时都会转换成可读的错误信息。
 - 无运行时依赖，不需要构建步骤；PAT 保存在 DSH 凭据记录中，普通设置文件不包含密钥。
 - 同时兼容 JSON 与 SSE 形式的 MCP 响应体；Nezha 当前使用 POST 请求/响应模式，不依赖长连接 SSE 会话。
+
+## 界面
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-route-light.png"><img src="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-route-light.png" alt="0.2.0 浅色主题连接路由：左侧 DSH，中间哪吒 MCP 节点，右侧监测服务器、服务器工具、文件工具与身份权限分组" width="960"></a>
+  <br><sub>0.2.0 浅色主题 · 连接路由：DSH → 哪吒 MCP → 服务器与工具组 · 点击查看大图</sub>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-route-dark.png"><img src="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-route-dark.png" alt="0.2.0 深色主题连接路由：相同的服务器与工具分组，连线与状态胶囊随 DSH 深色配色自动适配" width="960"></a>
+  <br><sub>0.2.0 深色主题 · 同一路由自动适配深色配色 · 点击查看大图</sub>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-settings-light.png"><img src="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-settings-light.png" alt="0.2.0 连接设置弹窗：Dashboard 地址与最终 /mcp 地址预览、已保存的 PAT、请求超时与启用开关" width="440"></a>
+  <a href="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-test-light.png"><img src="https://raw.githubusercontent.com/kaecho/dsh-nezha/main/docs/images/readme-020-test-light.png" alt="0.2.0 测试连接弹窗：规范化地址、MCP 握手、工具列表与服务器概览四步依次通过" width="440"></a>
+  <br><sub>连接设置与测试连接弹窗 · 测试只读不保存 · 点击查看大图</sub>
+</p>
+
+插件详情页的配置区由三部分组成：
+
+1. **连接路由**：左侧是 DeepSeek Harness，中间是「哪吒 MCP」节点（点击打开连接设置），右侧是可展开的「监测服务器」与工具分组（服务器工具、文件工具、身份权限）。连接成功后连线点亮，显示服务器在线数与工具数量。
+2. **连接设置弹窗**：Dashboard 地址（实时预览最终 `/mcp` 地址）、API Token（显示/隐藏、已保存标记、清除）、请求超时、启用开关。
+3. **测试连接弹窗**：依次验证地址规范化、MCP 握手、工具列表和服务器概览；失败时按错误码给出处理建议。
+
+底栏显示设置文件路径（可复制）、PAT 存放位置提示与「刷新工具」。插件详情页的文档区域使用精选说明（`docs/plugin-detail.zh.md` / `en.md`），完整说明仍以本 README 为准。
+
+深色与浅色主题跟随 DSH 自动适配，窄屏下路由改为纵向堆叠。
 
 ## 环境要求
 
@@ -71,7 +102,7 @@ enable_mcp: true
 npm pack
 ```
 
-命令会在仓库根目录生成 `dsh-nezha-0.1.0.tgz`。在 DSH 插件页选择从本地安装/安装本地 bundle，指向该 `.tgz` 文件即可。插件没有外部依赖，安装时不需要执行依赖构建脚本。
+命令会在仓库根目录生成 `dsh-nezha-0.2.0.tgz`。在 DSH 插件页选择从本地安装/安装本地 bundle，指向该 `.tgz` 文件即可。插件没有外部依赖，安装时不需要执行依赖构建脚本。
 
 ### 从 npm 安装（发布后）
 
@@ -91,10 +122,10 @@ npm pack
    | **启用** | 关闭后插件不连接 Nezha，也不会注册任何工具。 |
    | **超时** | 单次 MCP 请求的超时时间，范围 5–300 秒，默认 60 秒。执行耗时较长的 `server.exec` 时应调大，同时确保反向代理超时也足够。 |
 
-3. 点击 **测试连接**。测试使用当前表单中的地址和 PAT（若 PAT 留空则使用已保存的 PAT），执行一次 `initialize` 和 `tools/list`，不会保存配置，也不会执行命令或文件操作。成功后可以看到服务器名称、版本、协议版本和可用工具。
-4. 点击 **保存并连接**。插件会保存地址、启用状态和超时到 profile 设置文件，并把 PAT 写入 DSH 凭据记录，然后自动重连并刷新工具。
-5. 如果之后修改了 Nezha 的 PAT scope、服务器白名单或 Nezha 版本，点击 **刷新工具** 重新连接并重新读取 `tools/list`。
-6. 需要撤销已保存的 PAT 时，勾选设置页的 **清除已保存的 PAT（保存时生效）** 并保存；清除后连接状态会回到未配置状态。
+3. 点击 **测试连接** 并选择 **开始测试**。测试使用已保存的地址和 PAT（与表单是否打开无关），执行一次 `initialize` 和 `tools/list`，不会保存配置，也不会执行命令或文件操作。弹窗会显示服务器名称、版本、协议版本、工具数量和服务器概览。
+4. 点击 **保存并连接**。插件会保存地址、启用状态和超时到 profile 设置文件，并把 PAT 写入 DSH 凭据记录，然后自动重连并刷新工具；连接路由会显示服务器在线统计与工具分组。
+5. 如果之后修改了 Nezha 的 PAT scope、服务器白名单或 Nezha 版本，点击 **刷新工具** 重新连接并重新读取 `tools/list`；只想更新服务器在线状态时，展开「监测服务器」并点击刷新按钮即可，不需要重连。
+6. 需要撤销已保存的 PAT 时，打开 **连接设置**，点击 **清除已保存的 PAT** 并保存；清除后连接状态会回到待配置状态。
 
 保存后，Agent 即可使用 `mcp__nezha__*` 工具。工具列表来自当前 Nezha 实例的 `tools/list` 响应，因此不同 Nezha 版本的可用工具可能略有差异。
 
@@ -247,7 +278,7 @@ npm run pack:check
 
 - `package.json` 的 `name`、`version`、`license`、`engines`、`exports`、`files`、`dsh` 和 `scripts` 字段；
 - `cordis.patch.yml` 中插入的 `dsh-nezha` 行；
-- `locale/en.json`、`locale/zh.json` 中的 `meta.title` 和 `meta.description`；
+- `locale/en.json`、`locale/zh.json` 中的 `meta.title`、`meta.description`，以及 `meta.detail` 指向的精选文档存在且随包发布；
 - `icon.svg` 是否存在、是否以 `<svg` 开头且不超过 256 KiB；
 - 仓库内所有 `.js` / `.mjs` / `.cjs` 文件的语法（跳过 `node_modules`）。
 
@@ -264,9 +295,13 @@ npm run pack:check
 │   ├── settings-store.js # 非机密设置持久化
 │   ├── descriptors.js    # 设置页 Remote 描述符
 │   └── typert.host.js    # Typert Host 类型描述
-├── client.js             # Web 设置页（plugins.bundle.config）
+├── client.js             # Web 设置页（plugins.bundle.config）与详情页徽标（plugins.detail.badge）
 ├── cordis.patch.yml      # DSH bundle patch
-├── locale/               # 中英文显示元数据
+├── docs/
+│   ├── plugin-detail.zh.md # 插件详情页精选文档（中文）
+│   ├── plugin-detail.en.md # 插件详情页精选文档（英文）
+│   └── images/           # README 界面截图（不打进 npm 包）
+├── locale/               # 中英文显示元数据（含 meta.detail）
 ├── icon.svg              # 插件图标
 ├── scripts/check.mjs     # 仓库自检
 └── test/                 # node:test 测试
@@ -277,11 +312,11 @@ npm run pack:check
 ## 发布流程
 
 1. 更新 `package.json` 的 `version`，并在 `CHANGELOG.md` 中记录变更。
-2. 提交变更并创建与版本一致的 tag，例如 `v0.1.0`：
+2. 提交变更并创建与版本一致的 tag，例如 `v0.2.0`：
 
    ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag v0.2.0
+   git push origin v0.2.0
    ```
 
 3. 推送 tag 会触发 `.github/workflows/release.yml`：
@@ -301,6 +336,6 @@ npm run pack:check
 
 `dsh-nezha` connects a Nezha Monitoring V2 dashboard's built-in MCP endpoint (`POST /mcp`, Bearer `nzp_...` PAT) to DeepSeek Harness. It discovers tools dynamically and exposes them as `mcp__nezha__<tool>` (for example `mcp__nezha__server_list` and `mcp__nezha__fs_read`).
 
-Install it from the DSH Plugins page by pointing at the repository directory or the `dsh-nezha-0.1.0.tgz` produced by `npm pack` (npm publication is not part of this release yet). Configure the dashboard URL and PAT in the plugin detail page, then use **Test connection**, **Save**, and **Refresh tools**. The PAT is stored as the DSH credential record `dsh-nezha/token`; non-secret settings live in `<profile>/dsh-nezha/settings.json`.
+Install it from the DSH Plugins page by pointing at the repository directory or the `dsh-nezha-0.2.0.tgz` produced by `npm pack` (npm publication is not part of this release yet). Configure the dashboard URL and PAT in the plugin detail page, use **Test connection** to validate them, then **Save and connect**; the connection route shows monitored servers and tool groups, and **Refresh tools** reconnects after scope changes. The PAT is stored as the DSH credential record `dsh-nezha/token`; non-secret settings live in `<profile>/dsh-nezha/settings.json`.
 
-Development uses Node.js 22+ with no external dependencies: `npm run check`, `npm test`, and `npm run pack:check`. Pushing a tag such as `v0.1.0` runs the release workflow, verifies that the tag matches `package.json`, packs the plugin, and creates a GitHub Release with the `.tgz` asset. Licensed under MIT.
+Development uses Node.js 22+ with no external dependencies: `npm run check`, `npm test`, and `npm run pack:check`. Pushing a tag such as `v0.2.0` runs the release workflow, verifies that the tag matches `package.json`, packs the plugin, and creates a GitHub Release with the `.tgz` asset. Licensed under MIT.
