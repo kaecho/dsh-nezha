@@ -1,6 +1,6 @@
 {
   "name": "dsh-nezha",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Connect Nezha monitoring's built-in MCP server to DeepSeek Harness, with a visual connection page for the endpoint and PAT.",
   "type": "module",
   "license": "MIT",

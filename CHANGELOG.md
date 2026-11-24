@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-24
+
+### Changed
+
+- 首次发布到 npm：用户在插件页或 CLI 中输入 `dsh-nezha` 即可按包名安装，无需构建步骤或依赖构建脚本。
+- README 安装章节改为以 npm 安装为主，新增 CLI 安装命令与 npm 徽章；本地目录与 `.tgz` 安装调整为开发调试、固定版本和离线场景的备选方案。
+- README 发布流程补充 `npm publish` 步骤，明确 Release 工作流只创建 GitHub Release，不会代替发布到 registry。
+
 ## [0.2.0] - 2026-11-19
 
 ### Added
@@ -42,6 +50,7 @@
 - 新增无第三方依赖的 `scripts/check.mjs`，校验 manifest、bundle patch、locale、图标和 JS 语法。
 - 新增 GitHub Actions CI（Node.js 22/24）和基于 `v*` tag 的 GitHub Release 工作流。
 
-[Unreleased]: https://github.com/kaecho/dsh-nezha/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kaecho/dsh-nezha/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/kaecho/dsh-nezha/releases/tag/v0.2.1
 [0.2.0]: https://github.com/kaecho/dsh-nezha/releases/tag/v0.2.0
 [0.1.0]: https://github.com/kaecho/dsh-nezha/releases/tag/v0.1.0

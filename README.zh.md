@@ -1,13 +1,14 @@
 # dsh-nezha
 
 [![CI](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml/badge.svg)](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/dsh-nezha.svg)](https://www.npmjs.com/package/dsh-nezha)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [English](README.md) | **简体中文**
 
 把 [哪吒监控（Nezha Monitoring）V2](https://nezha.wiki/) 内置的 MCP 服务接入 [DeepSeek Harness（DSH）](https://github.com/deepseek-ai/dsh) 的插件。安装后，Agent 可以通过一组 `mcp__nezha__*` 工具查看服务器、执行一次性命令、读写文件和生成大文件传输链接；服务器地址、PAT、启用状态和工具刷新都可以在 DSH Web UI 的插件详情页完成。设置页参考 [dsh-grok-search](https://github.com/Lain-in-coding/dsh-grok-search) 的交互设计，提供连接路由、测试连接弹窗与服务器/工具分组展示。
 
-> 当前版本：`0.2.0` · 许可证：MIT · 运行要求：DSH `>=0.2.1-rc.2`、Node.js `>=22`、Nezha V2（开启 `enable_mcp`）
+> 当前版本：`0.2.1` · 许可证：MIT · 运行要求：DSH `>=0.2.1-rc.2`、Node.js `>=22`、Nezha V2（开启 `enable_mcp`）
 
 ## 目录
 
@@ -88,28 +89,36 @@ enable_mcp: true
 
 ## 安装
 
-当前版本以 GitHub Release 的 `.tgz` 和本地目录安装为主，尚未发布到 npm。发布到 npm 后，也可以直接在 DSH 插件页按包名安装。
+插件已发布到 npm，安装只需一条命令，无需构建步骤，也不会执行依赖构建脚本。
 
-### 从本地目录安装（开发/自用推荐）
+### 从 npm 安装（推荐）
+
+在 DSH Web UI 中打开 **Plugins / 插件** 页面，选择添加插件，在“包名或地址”中填写 `dsh-nezha`，安装并保持启用。
+
+也可以在终端对实际启动的 profile 执行（例如 `web`）：
+
+```bash
+dsh plugin --profile web add dsh-nezha
+```
+
+如果页面提示需要重启（`restart-required`），重启 DSH 后重新打开插件详情页。
+
+### 从本地目录安装（开发调试）
 
 1. 克隆或下载本仓库到 DSH 所在主机，例如 `/path/to/dsh-nezha`。
 2. 打开 DSH Web UI 的 **Plugins / 插件** 页面，选择添加插件。
 3. 在“包名或地址”中填写该目录的绝对路径，例如 `/path/to/dsh-nezha`，然后安装并保持启用。
 4. 如果页面提示需要重启（`restart-required`），重启 DSH 后再打开插件详情页。
 
-### 从本地 `.tgz` 安装
+### 从本地 `.tgz` 安装（固定版本或离线环境）
 
-适用于固定版本或离线环境：
+从[最新 GitHub Release](https://github.com/kaecho/dsh-nezha/releases/latest) 下载 `.tgz`，或者在仓库内自行打包：
 
 ```bash
 npm pack
 ```
 
-命令会在仓库根目录生成 `dsh-nezha-0.2.0.tgz`。在 DSH 插件页选择从本地安装/安装本地 bundle，指向该 `.tgz` 文件即可。插件没有外部依赖，安装时不需要执行依赖构建脚本。
-
-### 从 npm 安装（发布后）
-
-发布到 npm 后，在 DSH 插件页的“包名或地址”中填写 `dsh-nezha` 即可按包名安装。
+命令会在仓库根目录生成 `dsh-nezha-0.2.1.tgz`。在 DSH 插件页选择从本地安装/安装本地 bundle，指向该 `.tgz` 文件即可。插件没有外部依赖，安装时不需要执行依赖构建脚本。
 
 安装完成后，插件列表中应出现标题为 **Nezha MCP / 哪吒 MCP** 的条目和对应图标。
 
@@ -321,8 +330,8 @@ npm run pack:check
 2. 提交变更并推送到 `main`，然后创建与版本一致的 tag 并推送：
 
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.2.1
+   git push origin v0.2.1
    ```
 
 3. 推送以 `v` 开头的 tag 会触发 `.github/workflows/release.yml`，自动完成：
@@ -331,7 +340,13 @@ npm run pack:check
    - 执行 `npm pack` 生成 `dsh-nezha-<version>.tgz` 并校验文件名；
    - 读取 `CHANGELOG.md` 中对应版本的条目作为 release notes，与自动生成的 notes 合并；
    - 创建或更新 GitHub Release，附加该 `.tgz` 文件；仅当该版本高于当前 latest release 时才标记为 **Latest**，重复运行会安全覆盖（re-upload）资产。
-4. Release 工作流声明了 `contents: write` 权限，用于创建 Release；**不会执行 `npm publish`**。
+4. 在干净的检出中把同一版本发布到 npm：
+
+   ```bash
+   npm publish
+   ```
+
+   Release 工作流刻意不执行 `npm publish`，保证每次同步到 registry 都是显式的本地操作。
 
 `.github/workflows/ci.yml` 会在推送到 `main` 以及针对 `main` 的 Pull Request 上运行，使用 Node.js 22 和 24 两个版本执行 `npm run check`、`npm test` 和 `npm pack --dry-run`。
 

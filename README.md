@@ -1,13 +1,14 @@
 # dsh-nezha
 
 [![CI](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml/badge.svg)](https://github.com/kaecho/dsh-nezha/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/dsh-nezha.svg)](https://www.npmjs.com/package/dsh-nezha)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **English** | [简体中文](README.zh.md)
 
 A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/dsh) plugin that connects the built-in MCP server of [Nezha Monitoring V2](https://nezha.wiki/). Once installed, the agent gets a set of `mcp__nezha__*` tools for inspecting servers, running one-shot commands, reading and writing server files, and minting large-file transfer URLs. The dashboard URL, PAT, enable state, and tool refresh are all managed from the plugin detail page in the DSH Web UI. The settings page follows the interaction design of [dsh-grok-search](https://github.com/Lain-in-coding/dsh-grok-search): a connection route, a test-connection dialog, and grouped server/tool views.
 
-> Current version: `0.2.0` · License: MIT · Requirements: DSH `>=0.2.1-rc.2`, Node.js `>=22`, Nezha V2 with `enable_mcp` enabled
+> Current version: `0.2.1` · License: MIT · Requirements: DSH `>=0.2.1-rc.2`, Node.js `>=22`, Nezha V2 with `enable_mcp` enabled
 
 ## Contents
 
@@ -87,28 +88,36 @@ Restart or reload the dashboard afterwards so `/mcp` becomes available.
 
 ## Installation
 
-This release is distributed as a `.tgz` attached to the GitHub Release and as a local directory. It is not published to npm yet; once it is, you can install it by package name from the DSH plugin page.
+The plugin is published to npm, so installing it is a one-liner: no build step and no dependency build scripts.
 
-### From a local directory (recommended for development and personal use)
+### From npm (recommended)
+
+In the DSH Web UI, open the **Plugins** page, choose to add a plugin, enter `dsh-nezha` in "package name or location", then install it and keep it enabled.
+
+Or use the CLI against the profile you boot (for example `web`):
+
+```bash
+dsh plugin --profile web add dsh-nezha
+```
+
+Restart DSH if the page reports `restart-required`, then reopen the plugin detail page.
+
+### From a local directory (development)
 
 1. Clone or download this repository onto the host running DSH, for example `/path/to/dsh-nezha`.
 2. Open the **Plugins** page in the DSH Web UI and choose to add a plugin.
 3. Enter the absolute path of the directory, for example `/path/to/dsh-nezha`, in "package name or location", then install it and keep it enabled.
 4. If the page reports `restart-required`, restart DSH and reopen the plugin detail page.
 
-### From a local `.tgz`
+### From a local `.tgz` (pinned versions or offline hosts)
 
-Use this for pinned versions or offline environments:
+Download the `.tgz` attached to the [latest GitHub Release](https://github.com/kaecho/dsh-nezha/releases/latest), or build one from a checkout:
 
 ```bash
 npm pack
 ```
 
-The command produces `dsh-nezha-0.2.0.tgz` in the repository root. In the DSH plugin page, choose to install a local bundle and point it at that `.tgz` file. The plugin has no external dependencies, so no dependency build scripts are needed during installation.
-
-### From npm (after publication)
-
-Once published to npm, enter `dsh-nezha` in "package name or location" on the DSH plugin page to install it by package name.
+The command produces `dsh-nezha-0.2.1.tgz` in the repository root. In the DSH plugin page, choose to install a local bundle and point it at that `.tgz` file. The plugin has no external dependencies, so no dependency build scripts are needed during installation.
 
 After installation, a **Nezha MCP / 哪吒 MCP** entry with its icon should appear in the plugin list.
 
@@ -318,8 +327,8 @@ To verify against a local Nezha instance, enable `enable_mcp`, create a test PAT
 2. Commit the changes, push `main`, and create a tag that matches the version:
 
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.2.1
+   git push origin v0.2.1
    ```
 
 3. Pushing a tag that starts with `v` triggers `.github/workflows/release.yml`, which:
@@ -328,7 +337,13 @@ To verify against a local Nezha instance, enable `enable_mcp`, create a test PAT
    - runs `npm pack` and verifies the produced `dsh-nezha-<version>.tgz`;
    - reads the matching `CHANGELOG.md` section as release notes and prepends it to the auto-generated notes;
    - creates or updates the GitHub Release with the `.tgz` asset, and marks it **Latest** only when the tag is newer than the current latest release; re-running the workflow re-uploads the asset safely.
-4. The release workflow declares `contents: write` to create the release; it **does not run `npm publish`**.
+4. Publish the same version to npm from a clean checkout:
+
+   ```bash
+   npm publish
+   ```
+
+   The release workflow deliberately does not run `npm publish`, so the registry copy is always an explicit local step.
 
 `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests targeting `main`, using Node.js 22 and 24 to run `npm run check`, `npm test`, and `npm pack --dry-run`.
 
